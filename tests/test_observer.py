@@ -20,9 +20,7 @@ async def test_observer_wrapper(settings):
     settings.CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",
-            "TEST_CONFIG": {
-                "expiry": 100500,
-            },
+            "TEST_CONFIG": {"expiry": 100500,},
         },
     }
 
@@ -34,8 +32,8 @@ async def test_observer_wrapper(settings):
             await super().accept()
 
         @observer(user_logged_in)
-        async def handle_user_logged_in(self, message, observer=None, **kwargs):
-            await self.send_json({"message": message, "observer": observer is not None})
+        async def handle_user_logged_in(self, *args, observer=None, **kwargs):
+            await self.send_json({"message": kwargs, "observer": observer is not None})
 
     communicator = WebsocketCommunicator(TestConsumer(), "/testws/")
 
@@ -64,9 +62,7 @@ async def test_model_observer_wrapper(settings):
     settings.CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",
-            "TEST_CONFIG": {
-                "expiry": 100500,
-            },
+            "TEST_CONFIG": {"expiry": 100500,},
         },
     }
 
@@ -78,10 +74,8 @@ async def test_model_observer_wrapper(settings):
             await super().accept()
 
         @model_observer(get_user_model())
-        async def user_change_observer_wrapper(
-            self, message, action, message_type, observer=None, **kwargs
-        ):
-            await self.send_json(dict(body=message, action=action, type=message_type))
+        async def user_change_observer_wrapper(self, message, observer=None, **kwargs):
+            await self.send_json(message)
 
     communicator = WebsocketCommunicator(TestConsumer(), "/testws/")
 
@@ -97,7 +91,7 @@ async def test_model_observer_wrapper(settings):
 
     assert {
         "action": "create",
-        "body": {"pk": user.pk},
+        "pk": user.pk,
         "type": "user.change.observer.wrapper",
     } == response
 
@@ -110,9 +104,7 @@ async def test_model_observer_wrapper_in_transaction(settings):
     settings.CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",
-            "TEST_CONFIG": {
-                "expiry": 100500,
-            },
+            "TEST_CONFIG": {"expiry": 100500,},
         },
     }
 
@@ -125,9 +117,9 @@ async def test_model_observer_wrapper_in_transaction(settings):
 
         @model_observer(get_user_model())
         async def user_change_wrapper_in_transaction(
-            self, message, action, message_type, observer=None, **kwargs
+            self, message, observer=None, **kwargs
         ):
-            await self.send_json(dict(body=message, action=action, type=message_type))
+            await self.send_json(message)
 
     communicator = WebsocketCommunicator(TestConsumer(), "/testws/")
 
@@ -154,7 +146,7 @@ async def test_model_observer_wrapper_in_transaction(settings):
 
     assert {
         "action": "create",
-        "body": {"pk": user.pk},
+        "pk": user.pk,
         "type": "user.change.wrapper.in.transaction",
     } == response
 
@@ -167,9 +159,7 @@ async def test_model_observer_delete_wrapper(settings):
     settings.CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",
-            "TEST_CONFIG": {
-                "expiry": 100500,
-            },
+            "TEST_CONFIG": {"expiry": 100500,},
         },
     }
 
@@ -181,10 +171,8 @@ async def test_model_observer_delete_wrapper(settings):
             await super().accept()
 
         @model_observer(get_user_model())
-        async def user_change_observer_delete(
-            self, message, action, message_type, observer=None, **kwargs
-        ):
-            await self.send_json(dict(body=message, action=action, type=message_type))
+        async def user_change_observer_delete(self, message, observer=None, **kwargs):
+            await self.send_json(message)
 
     communicator = WebsocketCommunicator(TestConsumerObserverDelete(), "/testws/")
 
@@ -203,7 +191,7 @@ async def test_model_observer_delete_wrapper(settings):
 
     assert {
         "action": "create",
-        "body": {"pk": user.pk},
+        "pk": user.pk,
         "type": "user.change.observer.delete",
     } == response
     pk = user.pk
@@ -216,7 +204,7 @@ async def test_model_observer_delete_wrapper(settings):
 
     assert {
         "action": "delete",
-        "body": {"pk": pk},
+        "pk": pk,
         "type": "user.change.observer.delete",
     } == response
 
@@ -229,9 +217,7 @@ async def test_model_observer_many_connections_wrapper(settings):
     settings.CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",
-            "TEST_CONFIG": {
-                "expiry": 100500,
-            },
+            "TEST_CONFIG": {"expiry": 100500,},
         },
     }
 
@@ -243,10 +229,8 @@ async def test_model_observer_many_connections_wrapper(settings):
             await super().accept()
 
         @model_observer(get_user_model())
-        async def user_change_many_connections_wrapper(
-            self, message, action, message_type, observer=None, **kwargs
-        ):
-            await self.send_json(dict(body=message, action=action, type=message_type))
+        async def user_change_many_connections_wrapper(self, message, **kwargs):
+            await self.send_json(message)
 
     communicator1 = WebsocketCommunicator(TestConsumer(), "/testws/")
 
@@ -268,7 +252,7 @@ async def test_model_observer_many_connections_wrapper(settings):
 
     assert {
         "action": "create",
-        "body": {"pk": user.pk},
+        "pk": user.pk,
         "type": "user.change.many.connections.wrapper",
     } == response
 
@@ -278,7 +262,7 @@ async def test_model_observer_many_connections_wrapper(settings):
 
     assert {
         "action": "create",
-        "body": {"pk": user.pk},
+        "pk": user.pk,
         "type": "user.change.many.connections.wrapper",
     } == response
 
@@ -291,9 +275,7 @@ async def test_model_observer_many_consumers_wrapper(settings):
     settings.CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",
-            "TEST_CONFIG": {
-                "expiry": 100500,
-            },
+            "TEST_CONFIG": {"expiry": 100500,},
         },
     }
 
@@ -305,10 +287,8 @@ async def test_model_observer_many_consumers_wrapper(settings):
             await super().accept()
 
         @model_observer(get_user_model())
-        async def user_change_many_consumers_wrapper_1(
-            self, message, action, message_type, observer=None, **kwargs
-        ):
-            await self.send_json(dict(body=message, action=action, type=message_type))
+        async def user_change_many_consumers_wrapper_1(self, message, **kwargs):
+            await self.send_json(message)
 
     class TestConsumer2(AsyncAPIConsumer):
         async def accept(self, **kwargs):
@@ -316,10 +296,8 @@ async def test_model_observer_many_consumers_wrapper(settings):
             await super().accept()
 
         @model_observer(get_user_model())
-        async def user_change_many_consumers_wrapper_2(
-            self, message, action, message_type, observer=None, **kwargs
-        ):
-            await self.send_json(dict(body=message, action=action, type=message_type))
+        async def user_change_many_consumers_wrapper_2(self, message, **kwargs):
+            await self.send_json(message)
 
     communicator1 = WebsocketCommunicator(TestConsumer(), "/testws/")
 
@@ -341,7 +319,7 @@ async def test_model_observer_many_consumers_wrapper(settings):
 
     assert {
         "action": "create",
-        "body": {"pk": user.pk},
+        "pk": user.pk,
         "type": "user.change.many.consumers.wrapper.1",
     } == response
 
@@ -351,7 +329,7 @@ async def test_model_observer_many_consumers_wrapper(settings):
 
     assert {
         "action": "create",
-        "body": {"pk": user.pk},
+        "pk": user.pk,
         "type": "user.change.many.consumers.wrapper.2",
     } == response
 
@@ -364,9 +342,7 @@ async def test_model_observer_custom_groups_wrapper(settings):
     settings.CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",
-            "TEST_CONFIG": {
-                "expiry": 100500,
-            },
+            "TEST_CONFIG": {"expiry": 100500,},
         },
     }
 
@@ -378,10 +354,8 @@ async def test_model_observer_custom_groups_wrapper(settings):
             await super().accept()
 
         @model_observer(get_user_model())
-        async def user_change_custom_groups_wrapper(
-            self, message, action, message_type, observer=None, **kwargs
-        ):
-            await self.send_json(dict(body=message, action=action, type=message_type))
+        async def user_change_custom_groups_wrapper(self, message, **kwargs):
+            await self.send_json(message)
 
         @user_change_custom_groups_wrapper.groups
         def user_change_custom_groups_wrapper(
@@ -406,7 +380,7 @@ async def test_model_observer_custom_groups_wrapper(settings):
 
     assert {
         "action": "create",
-        "body": {"pk": user.pk},
+        "pk": user.pk,
         "type": "user.change.custom.groups.wrapper",
     } == response
 
@@ -427,9 +401,7 @@ async def test_model_observer_custom_groups_wrapper_with_split_function_api(sett
     settings.CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",
-            "TEST_CONFIG": {
-                "expiry": 100500,
-            },
+            "TEST_CONFIG": {"expiry": 100500,},
         },
     }
 
@@ -441,10 +413,8 @@ async def test_model_observer_custom_groups_wrapper_with_split_function_api(sett
             await super().accept()
 
         @model_observer(get_user_model())
-        async def user_change_custom_groups(
-            self, message, action, message_type, observer=None, **kwargs
-        ):
-            await self.send_json(dict(body=message, action=action, type=message_type))
+        async def user_change_custom_groups(self, message, **kwargs):
+            await self.send_json(message)
 
         @user_change_custom_groups.groups_for_signal
         def user_change_custom_groups(self, instance=None, **kwargs):
@@ -468,7 +438,7 @@ async def test_model_observer_custom_groups_wrapper_with_split_function_api(sett
 
     assert {
         "action": "create",
-        "body": {"pk": user.pk},
+        "pk": user.pk,
         "type": "user.change.custom.groups",
     } == response
 

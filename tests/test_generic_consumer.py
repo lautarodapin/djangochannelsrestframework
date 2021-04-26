@@ -320,9 +320,7 @@ async def test_update_mixin_consumer():
         {
             "action": "update",
             "pk": u1.id,
-            "data": {
-                "username": "test101",
-            },
+            "data": {"username": "test101",},
             "request_id": 2,
         }
     )
@@ -395,9 +393,7 @@ async def test_patch_mixin_consumer():
         {
             "action": "patch",
             "pk": u1.id,
-            "data": {
-                "email": "00@example.com",
-            },
+            "data": {"email": "00@example.com",},
             "request_id": 2,
         }
     )
